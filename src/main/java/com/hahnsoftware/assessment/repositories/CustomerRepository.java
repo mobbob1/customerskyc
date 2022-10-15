@@ -10,7 +10,6 @@ import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 /**
- *
  * @author MOB
  */
 @Repository
@@ -18,6 +17,6 @@ public interface CustomerRepository extends CrudRepository<Customer, Long> {
   @Override
   List<Customer> findAll();
   Customer findCustomerByContactNumber(String contactNumber);
-  Customer findCustomerById();
+  Customer findCustomerById(Long Id);
     
 }

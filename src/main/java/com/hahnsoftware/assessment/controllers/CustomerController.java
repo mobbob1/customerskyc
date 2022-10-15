@@ -10,12 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import javax.validation.Valid;
 /**
  *
  * @author MOB
  */
-@Controller
-@RequestMapping(value = "/customers")
+@RestController
+@RequestMapping(value = "/api")
 public class CustomerController {
   private final CustomerRepository customerRepository;
   @Autowired
@@ -28,12 +29,15 @@ public class CustomerController {
   public @ResponseBody List<Customer> listCustomers() {
     return customerRepository.findAll();
   }
-  @RequestMapping(
-      method = RequestMethod.POST,
-      consumes = {"application/json"})
-  public @ResponseBody void addCustomer(@RequestBody Customer customer) {
-    customerRepository.save(customer);
-  }
+
+
+       @PostMapping(value = "/customer", consumes = {"application/json"})
+     public Customer addCustomer(@Valid @RequestBody Customer customer) {
+         return   customerRepository.save(customer);
+     }
+  
+  
+  
   @RequestMapping(
       method = RequestMethod.PUT,
       consumes = {"application/json"})

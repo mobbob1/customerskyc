@@ -5,12 +5,16 @@
 package com.hahnsoftware.assessment.controllers;
 
 import com.hahnsoftware.assessment.entities.Customer;
+import com.hahnsoftware.assessment.exceptions.ResourceNotFoundException;
 import com.hahnsoftware.assessment.repositories.CustomerRepository;
+import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 import javax.validation.Valid;
+import org.springframework.http.ResponseEntity;
+
 /**
  *
  * @author MOB
@@ -18,34 +22,61 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping(value = "/api")
 public class CustomerController {
-  private final CustomerRepository customerRepository;
-  @Autowired
-  public CustomerController(CustomerRepository customerRepository) {
-    this.customerRepository = customerRepository;
-  }
-  @RequestMapping(
-      method = RequestMethod.GET,
-      produces = {"application/json"})
-  public @ResponseBody List<Customer> listCustomers() {
-    return customerRepository.findAll();
-  }
 
+    private final CustomerRepository customerRepository;
 
-       @PostMapping(value = "/customer", consumes = {"application/json"})
-     public Customer addCustomer(@Valid @RequestBody Customer customer) {
-         return   customerRepository.save(customer);
+    @Autowired
+    public CustomerController(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
+
+    @GetMapping("/customers")
+    public List<Customer> getListCustomers() {
+        return customerRepository.findAll();
+    }
+
+    @GetMapping("/customers/{id}")
+    public ResponseEntity<Customer> getCustomerId(@PathVariable(value = "id") Long id)
+            throws ResourceNotFoundException {
+        Customer customer = customerRepository.findCustomerById(id);
+        if (null == customer) {
+            new ResourceNotFoundException("Customer not found for this id :: " + id);
+        }
+        return ResponseEntity.ok().body(customer);
+    }
+
+    @PostMapping("/customer")
+    public Customer addCustomer(@Valid @RequestBody Customer customer) {
+        return customerRepository.save(customer);
+    }
+
+   @PutMapping("/customers/{id}")
+     public ResponseEntity<Customer> updateCustomer(@PathVariable(value = "id") Long id,
+      @Valid @RequestBody Customer customerDetails) throws ResourceNotFoundException {
+         Customer customer = customerRepository.findCustomerById(id);
+           if (null == customer) {
+            new ResourceNotFoundException("Customer not found for this id :: " + id);
+        }
+         customer.setId(customerDetails.getId());
+         customer.setContactNumber(customerDetails.getContactNumber());
+         customer.setFirstName(customerDetails.getFirstName());
+         customer.setSurname(customerDetails.getSurname());
+         customer.setResidentialAddress(customerDetails.getResidentialAddress());
+         customer.setEmailAddress(customerDetails.getEmailAddress());
+         final Customer updatedCustomer = customerRepository.save(customer);
+         return ResponseEntity.ok(updatedCustomer);
      }
-  
-  
-  
-  @RequestMapping(
-      method = RequestMethod.PUT,
-      consumes = {"application/json"})
-  public @ResponseBody void updateCustomer(@RequestBody Customer customer) {
-    customerRepository.save(customer);
-  }
-  @RequestMapping(method = RequestMethod.DELETE)
-  public @ResponseBody void deleteCustomer(@RequestParam("id") Long id) {
-    customerRepository.deleteById(id);
-  }
+ 
+     @DeleteMapping("/customers/{id}")
+     public Map<String, Boolean> deleteCustomer(@PathVariable(value = "id") Long id)
+       throws ResourceNotFoundException {
+         Customer customer = customerRepository.findCustomerById(id);
+          if (null == customer) {
+            new ResourceNotFoundException("Customer not found for this id :: " + id);
+        }
+         customerRepository.delete(customer);
+         Map<String, Boolean> response = new HashMap<>();
+         response.put("deleted", Boolean.TRUE);
+         return response;
+     }
 }

@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Hahn Software Assessment</title>
+
+    <link rel="stylesheet" type="text/css" href="stylesheet.css" media="screen" />
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script type="text/javascript">
+      var app = angular.module("customerManagement", []);
+      angular.module('customerManagement').constant('SERVER_URL','/customers');
+
+      //Controller Part
+      app.controller("customerManagementController",  function ($scope, $http, SERVER_URL) {
+        //Initialize page with default data which is blank in this example
+        $scope.customers = [];
+        $scope.form = {
+          id: -1,
+          firstname: "",
+          surname: "",
+          residentialaddress: "",
+          contactnumber:"",
+          emailaddress:""
+        };
+        //Now load the data from server
+        _refreshPageData();
+        //HTTP POST/PUT methods for add/edit customers
+        $scope.update = function () {
+          var method = "";
+          var url = "";
+          var data = {};
+          if ($scope.form.id == -1) {
+            //Id is absent so add customers - POST operation
+            method = "POST";
+            url = SERVER_URL;
+            data.firstname = $scope.form.firstname;
+            data.surname = $scope.form.surname;
+            data.residentialaddress = $scope.form.residentialaddress;
+            data.contactnumber = $scope.form.contactnumber;
+            data.emailaddress = $scope.form.emailaddress;
+          } else {
+            //If Id is present, it's edit operation - PUT operation
+            method = "PUT";
+            url = SERVER_URL;
+
+            data.id = $scope.form.id;
+            data.firstname = $scope.form.firstname;
+            data.surname = $scope.form.surname;
+            data.residentialaddress = $scope.form.residentialaddress;
+            data.contactnumber = $scope.form.contactnumber;
+            data.emailaddress = $scope.form.emailaddress;
+          }
+          $http({
+            method: method,
+            url: url,
+            data: angular.toJson(data),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).then(_success, _error);
+        };
+        //HTTP DELETE- delete customer by id
+        $scope.remove = function (customer) {
+
+          $http({
+            method: 'DELETE',
+            url: SERVER_URL+'?id='+customer.id
+          }).then(_success, _error);
+        };
+        //In case of edit customers, populate form with customer data
+        $scope.edit = function (customer) {
+          $scope.form.firstname = customer.firstname;
+          $scope.form.surname = customer.surname;
+          $scope.form.residentialaddress = customer.residentialaddress;
+          $scope.form.contactnumber = customer.contactnumber;
+          $scope.form.emailaddress = customer.emailaddress;
+          $scope.form.id = customer.id;
+        };
+          /* Private Methods */
+        //HTTP GET- get all customers collection
+        function _refreshPageData() {
+          $http({
+            method: 'GET',
+            url: SERVER_URL
+          }).then(function successCallback(response) {
+            $scope.customers = response.data;
+          }, function errorCallback(response) {
+            console.log(response.statusText);
+          });
+        }
+        function _success(response) {
+          _refreshPageData();
+          _clearForm();
+        }
+        function _error(response) {
+          alert(response.data.message || response.statusText);
+        }
+        //Clear the form
+        function _clearForm() {
+          $scope.form.firstname = "";
+          $scope.form.surname = "";
+          $scope.form.residentialaddress = "";
+          $scope.form.contactnumber = "";
+          $scope.form.emailaddress = "";
+          $scope.form.id = -1;
+        }
+      });
+    </script>
+</head>
+<body ng-app="customerManagement" ng-controller="customerManagementController">
+
+<div class="divTable blueTable">
+    <h3>Hahn Software Assessment</h3>
+    <h4>Enter Customer:</h4>
+    <form ng-submit="update()">
+        <div class="divTableRow">
+            <div class="divTableCell">First Name:</div>
+            <div class="divTableCell"><input type="text" placeholder="First Name" ng-model="form.firstname" minlength="2"/></div>
+        </div>
+        <div class="divTableRow">
+            <div class="divTableCell">Surname:</div>
+            <div class="divTableCell"><input type="text" placeholder="Surname" ng-model="form.surname" minlength="2"/></div>
+        </div>
+        <div class="divTableRow">
+            <div class="divTableCell">Residential Address</div>
+            <div class="divTableCell"><input type="text" placeholder="Residential Address" ng-model="form.residentialaddress" minlength="2" /></div>
+        </div>
+        <div class="divTableRow">
+            <div class="divTableCell">Contact Number</div>
+            <div class="divTableCell"><input type="text" placeholder="Contact Number eg.0244673311" ng-model="form.contactnumber" minlength="10" /></div>
+        </div>
+        <div class="divTableRow">
+            <div class="divTableCell">Email Address</div>
+            <div class="divTableCell"><input type="email" placeholder="Email eg. name@mail.com" ng-model="form.emailaddress" /></div>
+        </div>
+
+        <input type="submit" value="Save"/>
+    </form>
+    <div class="divTable blueTable">
+        <div class="divTableHeading">
+            <div  class="divTableHead">First Name</div>
+            <div  class="divTableHead">Surname</div>
+            <div  class="divTableHead">Residential Address</div>
+            <div  class="divTableHead">Contact Number</div>
+            <div  class="divTableHead">Email Address</div>
+            <div  class="divTableHead">Action</div>
+        </div>
+        <div class="divTableRow" ng-repeat="customer in customers">
+            <div class="divTableCell">{{ customer.firstname }}</div>
+            <div class="divTableCell">{{ customer.surname }}</div>
+            <div class="divTableCell">{{ customer.residentialaddress }}</div>
+            <div class="divTableCell">{{ customer.contactnumber }}</div>
+            <div class="divTableCell">{{ customer.emailaddress }}</div>
+            <div class="divTableCell"><a ng-click="edit( customer )" class="myButton">Edit</a> <a ng-click="remove( customer )" class="myButton">Remove</a></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

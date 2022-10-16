@@ -45,7 +45,7 @@ public class CustomerController {
         return ResponseEntity.ok().body(customer);
     }
 
-    @PostMapping("/customer")
+    @PostMapping("/customers")
     public Customer addCustomer(@Valid @RequestBody Customer customer) {
         return customerRepository.save(customer);
     }

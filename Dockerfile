@@ -1,3 +1,3 @@
 FROM openjdk:11
-COPY target/assessment.war assessment.war
-ENTRYPOINT ["java", "-jar", "/assessment.war"]
+COPY target/hahnassessment.war hahnassessment.war
+ENTRYPOINT ["java", "-jar", "/hahnassessment.war"]
